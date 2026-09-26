@@ -1,0 +1,98 @@
+---
+/**
+ * Hero trust signals. Values come from site.trust — all PLACEHOLDERS until real data arrives.
+ */
+import { site } from '@/config/site';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+}
+
+const { t } = Astro.props;
+
+const items = [
+  { value: site.trust.years, label: t('trust.years') },
+  { value: `${site.trust.rating} ★`, label: `${t('trust.rating')} · ${site.trust.ratingSource}` },
+  { value: site.trust.patients, label: t('trust.patients') },
+  { value: t.l(site.contact.city), label: t.l(site.contact.address), small: true },
+];
+---
+
+<div class="trust">
+  <dl class="trust__list container">
+    {
+      items.map((item, i) => (
+        <div class="trust__item" data-reveal style={`--reveal-delay: ${320 + i * 70}ms`}>
+          <dt class="trust__label">{item.label}</dt>
+          <dd class:list={['trust__value', item.small && 'trust__value--small']}>{item.value}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</div>
+
+<style>
+  .trust {
+    border-top: 1px solid var(--line);
+    background: color-mix(in srgb, var(--color-graphite) 72%, transparent);
+  }
+
+  .trust__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-block: 0;
+  }
+
+  .trust__item {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 0.3rem;
+    padding: 1.15rem 0;
+  }
+
+  .trust__item:nth-child(odd) {
+    padding-right: 1rem;
+  }
+  .trust__item:nth-child(even) {
+    padding-left: 1rem;
+    border-left: 1px solid var(--line);
+  }
+  .trust__item:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .trust__value {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem);
+    line-height: 1;
+    color: var(--text-strong);
+  }
+  .trust__value--small {
+    font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  }
+
+  .trust__label {
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+
+  @media (min-width: 900px) {
+    .trust__list {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .trust__item,
+    .trust__item:nth-child(odd),
+    .trust__item:nth-child(even) {
+      padding: 1.6rem 1.5rem;
+      border-bottom: 0;
+      border-left: 1px solid var(--line);
+    }
+    .trust__item:first-child {
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+</style>

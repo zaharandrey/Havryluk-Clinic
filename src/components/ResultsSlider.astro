@@ -1,0 +1,232 @@
+---
+/**
+ * Before / After comparison.
+ * Drag anywhere on the image (mouse, pen, touch) or focus the handle and use ← → / Home / End.
+ * `touch-action: pan-y` keeps vertical page scroll working on phones.
+ * Data: src/data/results.ts
+ */
+import SectionHeading from './SectionHeading.astro';
+import Media from './Media.astro';
+import type { ResultCase } from '@/data/types';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  cases: ResultCase[];
+  index?: string;
+}
+
+const { t, cases, index } = Astro.props;
+---
+
+<section id="results" class="section surface-anthracite" aria-labelledby="results-title">
+  <div class="container">
+    <SectionHeading
+      index={index}
+      eyebrow={t('results.eyebrow')}
+      line1={t('results.title')}
+      intro={t('results.intro')}
+      id="results-title"
+    />
+
+    {
+      cases.map((item) => (
+        <figure class="ba-wrap" data-reveal>
+          <div class="ba" data-ba style="--pos: 50%">
+            <div class="ba__layer ba__layer--after">
+              <Media
+                src={item.after.src}
+                alt={t.l(item.after.alt)}
+                ratio="16 / 10"
+                tone="light"
+                label={t.locale === 'uk' ? 'Після · 16:10' : 'After · 16:10'}
+                sizes="(min-width: 1360px) 1360px, 100vw"
+              />
+            </div>
+            <div class="ba__layer ba__layer--before">
+              <Media
+                src={item.before.src}
+                alt={t.l(item.before.alt)}
+                ratio="16 / 10"
+                tone="anthracite"
+                label={t.locale === 'uk' ? 'До · 16:10' : 'Before · 16:10'}
+                sizes="(min-width: 1360px) 1360px, 100vw"
+              />
+            </div>
+
+            <span class="ba__tag ba__tag--before" aria-hidden="true">{t('results.before')}</span>
+            <span class="ba__tag ba__tag--after" aria-hidden="true">{t('results.after')}</span>
+
+            <div
+              class="ba__handle"
+              role="slider"
+              tabindex="0"
+              aria-label={t('a11y.compare')}
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="50"
+              aria-valuetext="50%"
+              data-ba-handle
+            >
+              <span class="ba__knob" aria-hidden="true">
+                <svg width="22" height="10" viewBox="0 0 22 10"><path d="M5 1L1 5l4 4M17 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1" /></svg>
+              </span>
+            </div>
+          </div>
+          <figcaption class="ba__caption">
+            <span class="index">01</span>
+            <span>{t.l(item.title)}</span>
+          </figcaption>
+        </figure>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-ba]').forEach((root) => {
+    const handle = root.querySelector<HTMLElement>('[data-ba-handle]');
+    if (!handle) return;
+
+    let pos = 50;
+    const set = (value: number) => {
+      pos = Math.min(100, Math.max(0, value));
+      root.style.setProperty('--pos', `${pos}%`);
+      const rounded = String(Math.round(pos));
+      handle.setAttribute('aria-valuenow', rounded);
+      handle.setAttribute('aria-valuetext', `${rounded}%`);
+    };
+    const fromEvent = (e: PointerEvent) => {
+      const rect = root.getBoundingClientRect();
+      set(((e.clientX - rect.left) / rect.width) * 100);
+    };
+
+    root.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      root.setPointerCapture(e.pointerId);
+      root.classList.add('is-dragging');
+      fromEvent(e);
+    });
+    root.addEventListener('pointermove', (e) => {
+      if (root.hasPointerCapture(e.pointerId)) fromEvent(e);
+    });
+    const end = (e: PointerEvent) => {
+      if (root.hasPointerCapture(e.pointerId)) root.releasePointerCapture(e.pointerId);
+      root.classList.remove('is-dragging');
+    };
+    root.addEventListener('pointerup', end);
+    root.addEventListener('pointercancel', end);
+
+    handle.addEventListener('keydown', (e) => {
+      const step = e.shiftKey ? 10 : 2;
+      const map: Record<string, number> = {
+        ArrowLeft: pos - step,
+        ArrowDown: pos - step,
+        ArrowRight: pos + step,
+        ArrowUp: pos + step,
+        Home: 0,
+        End: 100,
+      };
+      if (e.key in map) {
+        e.preventDefault();
+        set(map[e.key]);
+      }
+    });
+  });
+</script>
+
+<style>
+  .ba-wrap {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .ba {
+    position: relative;
+    width: 100%;
+    /* keep the whole comparison within one screen on wide displays (16:10 ratio) */
+    max-width: calc((100svh - var(--header-h) - 7rem) * 1.6);
+    min-width: min(100%, 320px);
+    margin-inline: auto;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-y;
+    cursor: ew-resize;
+  }
+
+  .ba__layer--before {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+  }
+
+  .ba__layer :global(.media) {
+    height: 100%;
+  }
+
+  .ba__tag {
+    position: absolute;
+    top: 1.25rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-strong);
+    background: color-mix(in srgb, var(--color-anthracite) 70%, transparent);
+    pointer-events: none;
+  }
+  .ba__tag--before {
+    left: 1.25rem;
+  }
+  .ba__tag--after {
+    right: 1.25rem;
+  }
+
+  .ba__handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--pos);
+    width: 1px;
+    background: var(--color-ivory);
+    transform: translateX(-0.5px);
+  }
+
+  .ba__handle:focus-visible {
+    outline: none;
+  }
+  .ba__handle:focus-visible .ba__knob {
+    outline: 1px solid var(--focus-ring);
+    outline-offset: 4px;
+  }
+
+  .ba__knob {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border: 1px solid var(--color-ivory);
+    border-radius: 50%;
+    color: var(--color-ivory);
+    background: color-mix(in srgb, var(--color-graphite) 55%, transparent);
+    transform: translate(-50%, -50%);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .ba.is-dragging .ba__knob {
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+
+  .ba__caption {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+  }
+</style>

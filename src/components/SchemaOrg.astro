@@ -1,0 +1,68 @@
+---
+/**
+ * JSON-LD structured data.
+ * Only REAL values are emitted: any field still containing a [placeholder] is dropped,
+ * so search engines / AI answers never see invented data.
+ *
+ * - Dentist (a LocalBusiness + MedicalOrganization subtype) on every page
+ * - FAQPage only when every answer is real content
+ * - Extra page-level nodes can be passed via `extra`
+ */
+import { site } from '@/config/site';
+import { faq } from '@/data/faq';
+import type { Locale } from '@/i18n/config';
+import { localizePath } from '@/i18n/utils';
+import { isFilled } from '@/lib/placeholder';
+
+interface Props {
+  locale: Locale;
+  includeFaq?: boolean;
+  extra?: Record<string, unknown>[];
+}
+
+const { locale, includeFaq = false, extra = [] } = Astro.props;
+const home = new URL(localizePath('/', locale), Astro.site).href;
+
+const pick = <T extends Record<string, unknown>>(obj: T) =>
+  Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => (typeof v === 'string' ? isFilled(v) : v !== undefined)),
+  );
+
+const address = site.contact.address[locale];
+const city = site.contact.city[locale];
+const sameAs = site.social.map((s) => s.url).filter(isFilled);
+
+const dentist = pick({
+  '@type': 'Dentist',
+  '@id': `${new URL('/', Astro.site).href}#clinic`,
+  name: site.name,
+  url: home,
+  telephone: site.contact.phoneE164,
+  email: site.contact.email,
+  hasMap: site.contact.mapUrl,
+  address:
+    isFilled(address) && isFilled(city)
+      ? { '@type': 'PostalAddress', streetAddress: address, addressLocality: city, addressCountry: 'UA' }
+      : undefined,
+  sameAs: sameAs.length ? sameAs : undefined,
+});
+
+const faqReady = includeFaq && faq.every((f) => isFilled(f.answer[locale]) && isFilled(f.question[locale]));
+const faqPage = faqReady
+  ? {
+      '@type': 'FAQPage',
+      mainEntity: faq.map((f) => ({
+        '@type': 'Question',
+        name: f.question[locale],
+        acceptedAnswer: { '@type': 'Answer', text: f.answer[locale] },
+      })),
+    }
+  : undefined;
+
+const graph = {
+  '@context': 'https://schema.org',
+  '@graph': [dentist, faqPage, ...extra].filter(Boolean),
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(graph)} />

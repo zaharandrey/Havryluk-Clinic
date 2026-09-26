@@ -1,0 +1,155 @@
+---
+/**
+ * FAQ — native <details>/<summary> (accessible, zero JS). Smooth height animation
+ * in browsers that support ::details-content + interpolate-size.
+ * Data: src/data/faq.ts
+ */
+import SectionHeading from './SectionHeading.astro';
+import Button from './Button.astro';
+import type { FaqItem } from '@/data/types';
+import { phoneHref } from '@/lib/contact';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  items: FaqItem[];
+  index?: string;
+}
+
+const { t, items, index } = Astro.props;
+---
+
+<section id="faq" class="section surface-base" aria-labelledby="faq-title">
+  <div class="container faq">
+    <div class="faq__head">
+      <SectionHeading index={index} eyebrow={t('faq.eyebrow')} line1={t('faq.title')} id="faq-title" align="start" />
+      <p class="muted faq__intro">{t('faq.intro')}</p>
+      <Button href={phoneHref(t.locale)} variant="text" arrow>{t('cta.call')}</Button>
+    </div>
+
+    <div class="faq__list">
+      {
+        items.map((item, i) => (
+          <details class="faq__item" name="faq" data-reveal style={`--reveal-delay: ${i * 50}ms`}>
+            <summary class="faq__q">
+              <span class="index">{String(i + 1).padStart(2, '0')}</span>
+              <span class="faq__q-text">{t.l(item.question)}</span>
+              <span class="faq__icon" aria-hidden="true" />
+            </summary>
+            <div class="faq__a">
+              <p>{t.l(item.answer)}</p>
+            </div>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .faq__head :global(.sh) {
+    margin-bottom: var(--space-md);
+  }
+
+  .faq__intro {
+    max-width: 22rem;
+    margin-bottom: var(--space-sm);
+  }
+
+  .faq__list {
+    border-top: 1px solid var(--line);
+  }
+
+  .faq__item {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .faq__q {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) 20px;
+    align-items: center;
+    gap: 1rem;
+    min-height: 72px;
+    padding: 1.1rem 0;
+    cursor: pointer;
+    list-style: none;
+  }
+  .faq__q::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq__q-text {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem);
+    font-weight: 500;
+    color: var(--text-strong);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .faq__q:hover .faq__q-text {
+    color: var(--color-white);
+  }
+
+  /* Plus → minus */
+  .faq__icon {
+    position: relative;
+    width: 20px;
+    height: 20px;
+  }
+  .faq__icon::before,
+  .faq__icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--text);
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .faq__icon::after {
+    transform: rotate(90deg);
+  }
+  .faq__item[open] .faq__icon::after {
+    transform: rotate(0deg);
+  }
+
+  .faq__a {
+    padding: 0 0 1.75rem 3.5rem;
+    color: var(--text-muted);
+    max-width: 44rem;
+  }
+
+  .faq__item::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition:
+      block-size var(--dur) var(--ease-out),
+      content-visibility var(--dur) allow-discrete;
+  }
+  .faq__item[open]::details-content {
+    block-size: auto;
+  }
+
+  @media (min-width: 900px) {
+    .faq {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+      gap: clamp(3rem, 7vw, 8rem);
+      align-items: start;
+    }
+    .faq__head {
+      position: sticky;
+      top: calc(var(--header-h) + 2rem);
+    }
+    .faq__q {
+      grid-template-columns: 3.5rem minmax(0, 1fr) 20px;
+    }
+    .faq__a {
+      padding-left: 4.5rem;
+    }
+  }
+</style>

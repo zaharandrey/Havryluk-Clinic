@@ -1,0 +1,160 @@
+---
+/**
+ * Media — single entry point for every photo on the site.
+ *
+ * • With `src` (an imported ImageMetadata): renders a responsive <picture>
+ *   with AVIF + WebP, correct width/height, lazy loading (or eager + high priority
+ *   for above-the-fold images).
+ * • Without `src`: renders an art-directed placeholder with the same aspect ratio,
+ *   so the layout never shifts when real photography is dropped in.
+ *
+ * Art direction for real photos: dark, warm, cinematic, natural skin, soft contrast.
+ */
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src?: ImageMetadata;
+  alt: string;
+  /** CSS aspect-ratio, e.g. '4 / 5'. Use 'auto' to fill the parent. */
+  ratio?: string;
+  /** Short label shown on the placeholder: what photo belongs here. */
+  label?: string;
+  /** Placeholder mood — keeps the palette varied section to section. */
+  tone?: 'warm' | 'chocolate' | 'anthracite' | 'graphite' | 'light';
+  sizes?: string;
+  widths?: number[];
+  priority?: boolean;
+  class?: string;
+}
+
+const {
+  src,
+  alt,
+  ratio = '4 / 5',
+  label,
+  tone = 'warm',
+  sizes = '(min-width: 1100px) 50vw, 100vw',
+  widths = [480, 768, 1080, 1440, 1920],
+  priority = false,
+  class: className,
+} = Astro.props;
+
+const style = ratio === 'auto' ? undefined : `aspect-ratio: ${ratio}`;
+---
+
+{
+  src ? (
+    <div class:list={['media', className]} style={style}>
+      <Picture
+        src={src}
+        alt={alt}
+        formats={['avif', 'webp']}
+        widths={widths.filter((w) => w <= src.width)}
+        sizes={sizes}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : 'auto'}
+        decoding="async"
+        class="media__img"
+      />
+    </div>
+  ) : (
+    <div
+      class:list={['media', 'media--placeholder', `media--${tone}`, className]}
+      style={style}
+      role="img"
+      aria-label={alt}
+    >
+      {label && (
+        <span class="media__label" aria-hidden="true">
+          [ {label} ]
+        </span>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .media {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    background: var(--surface-anthracite);
+  }
+
+  .media :global(picture),
+  .media :global(.media__img) {
+    width: 100%;
+    height: 100%;
+  }
+  .media :global(.media__img) {
+    object-fit: cover;
+  }
+
+  /* ---- Placeholder: soft window light on a warm dark wall ---------------- */
+  .media--placeholder {
+    --_a: var(--color-warm-graphite);
+    --_b: var(--color-anthracite);
+    --_glow: var(--glow-ivory);
+    background:
+      radial-gradient(120% 90% at 78% 12%, var(--_glow), transparent 55%),
+      radial-gradient(90% 70% at 10% 100%, var(--shade), transparent 60%),
+      linear-gradient(160deg, var(--_a), var(--_b));
+  }
+
+  .media--chocolate {
+    --_a: var(--color-chocolate-graphite);
+    --_b: var(--color-warm-graphite);
+    --_glow: var(--glow-champagne);
+  }
+  .media--anthracite {
+    --_a: var(--color-anthracite);
+    --_b: var(--color-graphite);
+    --_glow: var(--glow-ivory-soft);
+  }
+  .media--graphite {
+    --_a: var(--color-graphite);
+    --_b: var(--color-chocolate-graphite);
+  }
+  .media--light {
+    --_a: color-mix(in srgb, var(--color-warm-graphite), var(--color-ivory) 14%);
+    --_b: var(--color-warm-graphite);
+    --_glow: var(--glow-ivory-strong);
+  }
+
+  /* Fine film grain — tiny inline SVG, no request */
+  .media--placeholder::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.16;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Architectural corner marks */
+  .media--placeholder::after {
+    content: '';
+    position: absolute;
+    inset: 14px;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--line-strong), var(--line-strong)) top left / 14px 1px,
+      linear-gradient(var(--line-strong), var(--line-strong)) top left / 1px 14px,
+      linear-gradient(var(--line-strong), var(--line-strong)) bottom right / 14px 1px,
+      linear-gradient(var(--line-strong), var(--line-strong)) bottom right / 1px 14px;
+    background-repeat: no-repeat;
+  }
+
+  .media__label {
+    position: absolute;
+    left: 24px;
+    bottom: 20px;
+    right: 24px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+  }
+</style>

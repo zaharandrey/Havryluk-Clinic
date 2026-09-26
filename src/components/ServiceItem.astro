@@ -1,0 +1,105 @@
+---
+import type { Service } from '@/data/types';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  service: Service;
+  index: number;
+}
+
+const { t, service, index } = Astro.props;
+---
+
+<li class="si" data-reveal style={`--reveal-delay: ${index * 50}ms`}>
+  <a href={t.path(`/services/${service.slug}`)} class="si__link">
+    <span class="index si__index">{String(index + 1).padStart(2, '0')}</span>
+    <span class="si__text">
+      <span class="si__title">{t.l(service.title)}</span>
+      <span class="si__summary">{t.l(service.summary)}</span>
+    </span>
+    <svg class="si__arrow" width="22" height="14" viewBox="0 0 22 14" aria-hidden="true">
+      <path d="M0 7h20.5M14.5 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1" />
+    </svg>
+  </a>
+</li>
+
+<style>
+  .si {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .si__link {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.35rem 0;
+    isolation: isolate;
+  }
+
+  /* Hover surface bleeds slightly beyond the text column */
+  .si__link::before {
+    content: '';
+    position: absolute;
+    inset: 0 -1.25rem;
+    z-index: -1;
+    background: var(--surface-warm);
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+
+  .si__text {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .si__title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.6rem);
+    line-height: 1.1;
+    color: var(--text-strong);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .si__summary {
+    font-size: var(--fs-small);
+    color: var(--text-subtle);
+  }
+
+  .si__arrow {
+    color: var(--text-muted);
+    transition:
+      transform var(--dur) var(--ease-out),
+      color var(--dur) var(--ease-out);
+  }
+
+  .si__index {
+    align-self: start;
+    padding-top: 0.65rem;
+  }
+
+  @media (hover: hover) {
+    .si__link:hover::before,
+    .si__link:focus-visible::before {
+      opacity: 1;
+    }
+    .si__link:hover .si__title,
+    .si__link:focus-visible .si__title {
+      transform: translateX(10px);
+    }
+    .si__link:hover .si__arrow,
+    .si__link:focus-visible .si__arrow {
+      color: var(--color-champagne);
+      transform: translateX(6px);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .si__link {
+      grid-template-columns: 4rem minmax(0, 1fr) auto;
+      padding: 1.75rem 0;
+    }
+  }
+</style>

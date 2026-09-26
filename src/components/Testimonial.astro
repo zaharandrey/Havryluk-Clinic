@@ -1,0 +1,86 @@
+---
+import type { Testimonial } from '@/data/types';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  item: Testimonial;
+}
+
+const { t, item } = Astro.props;
+const stars = item.rating ?? 5;
+const source = t.l(item.source);
+---
+
+<figure class="tm">
+  <blockquote class="tm__quote">
+    <p>“{t.l(item.quote)}”</p>
+  </blockquote>
+  <figcaption class="tm__meta">
+    <span class="tm__author">{t.l(item.author)}</span>
+    <span class="tm__sep" aria-hidden="true"></span>
+    <span
+      class:list={['tm__stars', item.rating === null && 'is-placeholder']}
+      role="img"
+      aria-label={item.rating === null ? '[★ rating]' : `${item.rating} / 5`}
+    >
+      {'★'.repeat(stars)}
+    </span>
+    {
+      item.sourceUrl ? (
+        <a class="tm__source link" href={item.sourceUrl} rel="noopener" target="_blank">{source}</a>
+      ) : (
+        <span class="tm__source">{source}</span>
+      )
+    }
+  </figcaption>
+</figure>
+
+<style>
+  .tm {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .tm__quote p {
+    font-family: var(--font-serif);
+    font-size: var(--fs-quote);
+    font-style: italic;
+    font-weight: 300;
+    line-height: 1.18;
+    color: var(--text-strong);
+    text-wrap: balance;
+    max-width: 22ch;
+  }
+
+  .tm__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1rem;
+    font-size: var(--fs-small);
+  }
+
+  .tm__author {
+    font-weight: 600;
+    color: var(--text-strong);
+  }
+
+  .tm__sep {
+    width: 2rem;
+    height: 1px;
+    background: var(--line-accent);
+  }
+
+  .tm__stars {
+    letter-spacing: 0.2em;
+    color: var(--color-champagne);
+  }
+  .tm__stars.is-placeholder {
+    opacity: 0.4;
+  }
+
+  .tm__source {
+    color: var(--text-subtle);
+  }
+</style>

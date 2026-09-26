@@ -1,0 +1,162 @@
+---
+/**
+ * Full-screen mobile menu. Numbered serif links, contacts and language at the bottom.
+ * Closed state is `inert` so it is invisible to keyboard and screen readers.
+ */
+import Button from './Button.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import { primaryNav } from '@/data/navigation';
+import { site } from '@/config/site';
+import { bookingPath, phoneHref } from '@/lib/contact';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+}
+
+const { t } = Astro.props;
+---
+
+<div class="mm" id="mobile-menu" data-menu inert>
+  <nav class="mm__nav container" aria-label={t('a11y.primaryNav')}>
+    <ol role="list">
+      {
+        primaryNav.map((item, i) => (
+          <li style={`--i: ${i}`}>
+            <a href={t.path(item.href)} class="mm__link" data-menu-link>
+              <span class="index">{String(i + 1).padStart(2, '0')}</span>
+              <span class="mm__label">{t(item.key)}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+
+  <div class="mm__footer container">
+    <Button href={bookingPath(t.locale)} block data-menu-link>{t('cta.bookConsultation')}</Button>
+    <div class="mm__meta">
+      <a href={phoneHref(t.locale)} class="mm__phone">{site.contact.phoneDisplay}</a>
+      <LanguageSwitcher t={t} />
+    </div>
+  </div>
+</div>
+
+<script>
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+
+  if (menu && toggle) {
+    const setOpen = (open: boolean) => {
+      menu.classList.toggle('is-open', open);
+      menu.inert = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', (open ? toggle.dataset.labelClose : toggle.dataset.labelOpen) ?? '');
+      document.documentElement.classList.toggle('menu-open', open);
+      if (open) menu.querySelector<HTMLElement>('[data-menu-link]')?.focus({ preventScroll: true });
+    };
+
+    toggle.addEventListener('click', () => setOpen(!menu.classList.contains('is-open')));
+    menu.querySelectorAll('[data-menu-link]').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.classList.contains('is-open')) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+    window.matchMedia('(min-width: 1100px)').addEventListener('change', (e) => e.matches && setOpen(false));
+  }
+</script>
+
+<style>
+  .mm {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-header) - 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: calc(var(--header-h) + var(--space-lg));
+    padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom));
+    background: var(--surface-anthracite);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--dur) var(--ease-out),
+      visibility 0s linear var(--dur);
+    overflow-y: auto;
+  }
+
+  .mm.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+
+  :global(html.menu-open) {
+    overflow: hidden;
+  }
+  :global(html.menu-open [data-header]) {
+    background: var(--surface-anthracite);
+    border-bottom-color: var(--line);
+  }
+
+  .mm__nav ol {
+    border-top: 1px solid var(--line);
+  }
+
+  .mm__nav li {
+    border-bottom: 1px solid var(--line);
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity var(--dur) var(--ease-out),
+      transform var(--dur) var(--ease-out);
+  }
+
+  .mm.is-open li {
+    opacity: 1;
+    transform: none;
+    transition-delay: calc(60ms + var(--i) * 40ms);
+  }
+
+  .mm__link {
+    display: flex;
+    align-items: baseline;
+    gap: 1.25rem;
+    padding: 0.9rem 0;
+  }
+
+  .mm__label {
+    font-family: var(--font-serif);
+    font-size: clamp(1.9rem, 7vw, 2.6rem);
+    line-height: 1.1;
+    color: var(--text-strong);
+  }
+
+  .mm__footer {
+    display: grid;
+    gap: var(--space-md);
+    margin-top: var(--space-xl);
+  }
+
+  .mm__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mm__phone {
+    font-size: 1rem;
+    font-weight: 500;
+    min-height: var(--tap);
+    display: inline-flex;
+    align-items: center;
+  }
+
+  @media (min-width: 1100px) {
+    .mm {
+      display: none;
+    }
+  }
+</style>

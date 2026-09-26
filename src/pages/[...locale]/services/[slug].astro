@@ -1,0 +1,143 @@
+---
+/**
+ * Service detail template — /services/[slug] and /en/services/[slug].
+ * One page per entry in src/data/services.ts. Copy is placeholder until provided.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Button from '@/components/Button.astro';
+import ServiceList from '@/components/ServiceList.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import CTA from '@/components/CTA.astro';
+import { services } from '@/data/services';
+import type { Service } from '@/data/types';
+import { locales } from '@/i18n/config';
+import { localeFromParam, localeParam, useTranslations } from '@/i18n/utils';
+import { bookingPath } from '@/lib/contact';
+
+export function getStaticPaths() {
+  return locales.flatMap((locale) =>
+    services.map((service) => ({
+      params: { locale: localeParam(locale), slug: service.slug },
+      props: { service },
+    })),
+  );
+}
+
+interface Props {
+  service: Service;
+}
+
+const { service } = Astro.props;
+const t = useTranslations(localeFromParam(Astro.params.locale));
+const title = t.l(service.title);
+const index = services.indexOf(service);
+const others = services.filter((s) => s !== service);
+
+const crumbs = [
+  { label: t.locale === 'uk' ? 'Головна' : 'Home', href: t.path('/') },
+  { label: t('nav.services'), href: t.path('/#services') },
+  { label: title },
+];
+
+const breadcrumbSchema = {
+  '@type': 'BreadcrumbList',
+  itemListElement: crumbs.map((c, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: c.label,
+    item: c.href ? new URL(c.href, Astro.site).href : Astro.url.href,
+  })),
+};
+---
+
+<BaseLayout
+  t={t}
+  title={`${title} — Havryluk Clinic`}
+  description={`${title} — Havryluk Clinic. ${t.l(service.summary)}`}
+  schema={[breadcrumbSchema]}
+>
+  <PageHero
+    t={t}
+    eyebrow={`${String(index + 1).padStart(2, '0')} · ${t('nav.services')}`}
+    title={title}
+    lead={t.l(service.summary)}
+    crumbs={crumbs}
+    image={{ src: service.image.src, alt: t.l(service.image.alt), label: `${title} · 4:5` }}
+  >
+    <div><Button href={bookingPath(t.locale)} arrow>{t('cta.bookConsultation')}</Button></div>
+  </PageHero>
+
+  <section class="section surface-warm">
+    <div class="container sd">
+      <div>
+        <h2 class="h3">{t('service.overview')}</h2>
+      </div>
+      <div class="sd__body">
+        <p class="lead">{t('service.overviewText')}</p>
+
+        <h2 class="h3 sd__sub">{t('service.steps')}</h2>
+        <ol class="sd__steps" role="list">
+          {
+            [1, 2, 3].map((n) => (
+              <li>
+                <span class="index">{String(n).padStart(2, '0')}</span>
+                <div>
+                  <h3 class="sd__step-title">{t('service.step')}</h3>
+                  <p class="muted">{t('service.stepText')}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+
+        <h2 class="h3 sd__sub">{t('service.price')}</h2>
+        <p class="muted">{t('service.priceText')}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section surface-base">
+    <div class="container">
+      <SectionHeading eyebrow={t('nav.services')} line1={t('cta.allServices')} />
+      <ServiceList t={t} services={others} />
+    </div>
+  </section>
+
+  <CTA t={t} />
+</BaseLayout>
+
+<style>
+  .sd {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .sd__sub {
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-md);
+  }
+
+  .sd__steps {
+    border-top: 1px solid var(--line);
+  }
+  .sd__steps li {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1.4rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .sd__step-title {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  @media (min-width: 900px) {
+    .sd {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      gap: clamp(3rem, 7vw, 8rem);
+    }
+  }
+</style>

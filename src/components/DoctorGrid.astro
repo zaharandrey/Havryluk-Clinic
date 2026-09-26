@@ -1,0 +1,71 @@
+---
+/**
+ * Doctors — large portraits. Horizontal snap-scroll on mobile, grid on desktop.
+ * Data: src/data/doctors.ts
+ */
+import SectionHeading from './SectionHeading.astro';
+import DoctorCard from './DoctorCard.astro';
+import type { Doctor } from '@/data/types';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  doctors: Doctor[];
+  index?: string;
+}
+
+const { t, doctors, index } = Astro.props;
+---
+
+<section id="doctors" class="section surface-base" aria-labelledby="doctors-title">
+  <div class="container">
+    <SectionHeading
+      index={index}
+      eyebrow={t('doctors.eyebrow')}
+      line1={t('doctors.title')}
+      intro={t('doctors.intro')}
+      id="doctors-title"
+    />
+  </div>
+
+  <div class="dg container">
+    {doctors.map((doctor, i) => <DoctorCard t={t} doctor={doctor} index={i} />)}
+  </div>
+</section>
+
+<style>
+  .dg {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(78%, 22rem);
+    gap: 1.25rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+    padding-bottom: 0.5rem;
+  }
+
+  .dg::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dg > :global(*) {
+    scroll-snap-align: start;
+  }
+
+  @media (min-width: 900px) {
+    .dg {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(1.5rem, 3vw, 3rem);
+      overflow: visible;
+    }
+
+    /* Editorial stagger */
+    .dg > :global(*:nth-child(3n + 2)) {
+      margin-top: var(--space-2xl);
+    }
+  }
+</style>

@@ -1,0 +1,63 @@
+---
+/**
+ * UA | EN switcher. Links to the same page in the other locale.
+ * Adding a locale = add it to i18n/config.ts + ui.ts; no component changes needed.
+ */
+import { locales, localeMeta } from '@/i18n/config';
+import { localizePath, stripLocale, type Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+}
+
+const { t } = Astro.props;
+const basePath = stripLocale(Astro.url.pathname);
+---
+
+<nav class="lang" aria-label={t('a11y.language')}>
+  {
+    locales.map((locale, i) => (
+      <>
+        {i > 0 && <span class="lang__sep" aria-hidden="true" />}
+        <a
+          href={localizePath(basePath, locale)}
+          hreflang={localeMeta[locale].htmlLang}
+          lang={localeMeta[locale].htmlLang}
+          aria-current={locale === t.locale ? 'true' : undefined}
+          class="lang__link"
+        >
+          {localeMeta[locale].label}
+        </a>
+      </>
+    ))
+  }
+</nav>
+
+<style>
+  .lang {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .lang__link {
+    display: inline-grid;
+    place-items: center;
+    min-width: 36px;
+    min-height: var(--tap);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--text-subtle);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .lang__link:hover,
+  .lang__link[aria-current='true'] {
+    color: var(--text-strong);
+  }
+
+  .lang__sep {
+    width: 1px;
+    height: 12px;
+    background: var(--line-strong);
+  }
+</style>

@@ -1,0 +1,223 @@
+---
+/**
+ * Header — transparent over the hero, turns solid anthracite after scroll.
+ * Desktop: logo · nav · phone · UA|EN · Book. Mobile: logo · Book · menu.
+ */
+import Logo from './Logo.astro';
+import Button from './Button.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import MobileMenu from './MobileMenu.astro';
+import { primaryNav } from '@/data/navigation';
+import { site } from '@/config/site';
+import { bookingPath, phoneHref } from '@/lib/contact';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  /** Start transparent (over a full-bleed hero). */
+  overlay?: boolean;
+}
+
+const { t, overlay = false } = Astro.props;
+---
+
+<header class:list={['header', !overlay && 'is-solid']} data-header data-overlay={overlay ? '' : undefined}>
+  <div class="header__inner container">
+    <Logo t={t} />
+
+    <nav class="header__nav" aria-label={t('a11y.primaryNav')}>
+      <ul role="list">
+        {
+          primaryNav.map((item) => (
+            <li>
+              <a href={t.path(item.href)} class="header__link">{t(item.key)}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="header__actions">
+      <a href={phoneHref(t.locale)} class="header__phone">{site.contact.phoneDisplay}</a>
+      <div class="header__lang"><LanguageSwitcher t={t} /></div>
+      <Button href={bookingPath(t.locale)} size="sm" class="header__book">{t('cta.book')}</Button>
+      <button
+        class="header__burger"
+        type="button"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        data-menu-toggle
+        data-label-open={t('a11y.menuOpen')}
+        data-label-close={t('a11y.menuClose')}
+        aria-label={t('a11y.menuOpen')}
+      >
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<MobileMenu t={t} />
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  if (header && header.hasAttribute('data-overlay')) {
+    let ticking = false;
+    const update = () => {
+      header.classList.toggle('is-solid', window.scrollY > 24);
+      ticking = false;
+    };
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+    update();
+  }
+</script>
+
+<style>
+  .header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: var(--z-header);
+    height: var(--header-h);
+    border-bottom: 1px solid transparent;
+    transition:
+      background-color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+
+  .header.is-solid {
+    background: color-mix(in srgb, var(--color-anthracite) 97%, transparent);
+    border-bottom-color: var(--line);
+  }
+
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    height: 100%;
+  }
+
+  .header__nav {
+    display: none;
+  }
+
+  .header__nav ul {
+    display: flex;
+    gap: clamp(1.25rem, 2vw, 2.25rem);
+  }
+
+  .header__link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--text-muted);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .header__link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 12px;
+    height: 1px;
+    background: var(--color-champagne);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .header__link:hover {
+    color: var(--text-strong);
+  }
+  .header__link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .header__actions {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.5rem, 1.5vw, 1.5rem);
+  }
+
+  .header__phone,
+  .header__lang {
+    display: none;
+  }
+
+  .header__phone {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--text-strong);
+    white-space: nowrap;
+  }
+
+  .header__burger {
+    display: grid;
+    place-content: center;
+    gap: 7px;
+    width: var(--tap);
+    height: var(--tap);
+    margin-right: -10px;
+  }
+  .header__burger span {
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--text-strong);
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .header__burger[aria-expanded='true'] span:first-child {
+    transform: translateY(4px) rotate(45deg);
+  }
+  .header__burger[aria-expanded='true'] span:last-child {
+    transform: translateY(-4px) rotate(-45deg);
+  }
+
+  /* Small phones: drop the "Clinic" sub-mark so Book always fits beside the menu */
+  @media (max-width: 479px) {
+    .header :global(.logo__sub) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 319px) {
+    .header :global(.header__book) {
+      display: none;
+    }
+  }
+
+  @media (min-width: 760px) {
+    .header__lang {
+      display: block;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .header__nav {
+      display: block;
+    }
+    .header__burger {
+      display: none;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .header__phone {
+      display: inline;
+    }
+  }
+</style>

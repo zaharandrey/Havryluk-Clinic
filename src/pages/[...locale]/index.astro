@@ -1,0 +1,55 @@
+---
+/**
+ * Home — one component tree for every locale:
+ *   /     → uk (default, no prefix)
+ *   /en/  → en
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import ServiceList from '@/components/ServiceList.astro';
+import About from '@/components/About.astro';
+import DoctorGrid from '@/components/DoctorGrid.astro';
+import ResultsSlider from '@/components/ResultsSlider.astro';
+import Technology from '@/components/Technology.astro';
+import Testimonials from '@/components/Testimonials.astro';
+import FAQAccordion from '@/components/FAQAccordion.astro';
+import CTA from '@/components/CTA.astro';
+import ContactBlock from '@/components/ContactBlock.astro';
+import { services } from '@/data/services';
+import { doctors } from '@/data/doctors';
+import { results } from '@/data/results';
+import { testimonials } from '@/data/testimonials';
+import { faq } from '@/data/faq';
+import { localeFromParam, staticLocalePaths, useTranslations } from '@/i18n/utils';
+
+export const getStaticPaths = staticLocalePaths;
+
+const t = useTranslations(localeFromParam(Astro.params.locale));
+---
+
+<BaseLayout t={t} title={t('meta.home.title')} description={t('meta.home.description')} overlayHeader includeFaqSchema>
+  <Hero t={t} />
+
+  <section id="services" class="section surface-base" aria-labelledby="services-title">
+    <div class="container">
+      <SectionHeading
+        index="01"
+        eyebrow={t('services.eyebrow')}
+        line1={t('services.title')}
+        intro={t('services.intro')}
+        id="services-title"
+      />
+      <ServiceList t={t} services={services} />
+    </div>
+  </section>
+
+  <About t={t} index="02" />
+  <DoctorGrid t={t} doctors={doctors} index="03" />
+  <ResultsSlider t={t} cases={results} index="04" />
+  <Technology t={t} index="05" />
+  <Testimonials t={t} items={testimonials} index="06" />
+  <FAQAccordion t={t} items={faq} index="07" />
+  <CTA t={t} />
+  <ContactBlock t={t} index="08" />
+</BaseLayout>

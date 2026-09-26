@@ -1,0 +1,91 @@
+---
+/**
+ * Final call to action — warm chocolate graphite, large serif, one decision.
+ */
+import Button from './Button.astro';
+import { site } from '@/config/site';
+import { bookingPath, phoneHref } from '@/lib/contact';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+}
+
+const { t } = Astro.props;
+---
+
+<section class="cta surface-chocolate" aria-labelledby="cta-title">
+  <div class="container cta__inner">
+    <span class="cta__line" data-reveal-line aria-hidden="true"></span>
+    <h2 id="cta-title" class="cta__title" data-reveal>
+      {t('cta.final.title.line1')}<br /><em>{t('cta.final.title.line2')}</em>
+    </h2>
+    <p class="lead cta__lead" data-reveal style="--reveal-delay: 100ms">{t('cta.final.lead')}</p>
+    <div class="cta__actions" data-reveal style="--reveal-delay: 180ms">
+      <Button href={bookingPath(t.locale)} arrow>{t('cta.bookConsultation')}</Button>
+      <a class="cta__phone" href={phoneHref(t.locale)}>
+        <span class="eyebrow">{t('contact.phone')}</span>
+        <span class="cta__phone-number serif">{site.contact.phoneDisplay}</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta {
+    padding-block: clamp(6rem, 4rem + 9vw, 12rem);
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .cta__inner {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-lg);
+  }
+
+  .cta__line {
+    width: 1px;
+    height: clamp(3rem, 6vw, 5rem);
+    background: var(--line-accent);
+    transform-origin: top;
+  }
+  :global(.js) .cta__line[data-reveal-line] {
+    transform: scaleY(0);
+  }
+  :global(.js) .cta__line[data-reveal-line].is-visible {
+    transform: scaleY(1);
+  }
+
+  .cta__title {
+    font-size: var(--fs-h1);
+    line-height: var(--lh-tight);
+  }
+
+  .cta__lead {
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-lg);
+    margin-top: var(--space-sm);
+  }
+
+  .cta__phone {
+    display: grid;
+    gap: 0.2rem;
+    text-align: left;
+    min-height: var(--tap);
+  }
+
+  .cta__phone-number {
+    font-size: 1.6rem;
+    line-height: 1.1;
+    color: var(--text-strong);
+  }
+</style>

@@ -1,0 +1,297 @@
+---
+/**
+ * Contact + booking request form.
+ * The form posts to site.booking.formEndpoint (JSON). While the endpoint is empty it
+ * validates locally and shows a developer notice — nothing is sent anywhere.
+ */
+import SectionHeading from './SectionHeading.astro';
+import Button from './Button.astro';
+import Media from './Media.astro';
+import { site } from '@/config/site';
+import { services } from '@/data/services';
+import { emailHref, phoneHref } from '@/lib/contact';
+import { isFilled } from '@/lib/placeholder';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  index?: string;
+}
+
+const { t, index } = Astro.props;
+const email = emailHref();
+const mapUrl = isFilled(site.contact.mapUrl) ? site.contact.mapUrl : undefined;
+---
+
+<section id="contact" class="section surface-anthracite" aria-labelledby="contact-title">
+  <div class="container">
+    <SectionHeading index={index} eyebrow={t('contact.eyebrow')} line1={t('contact.title')} id="contact-title" align="start" />
+
+    <div class="cb">
+      <div class="cb__info">
+        <address class="cb__details">
+          <div class="cb__row">
+            <span class="eyebrow">{t('contact.address')}</span>
+            <p>{t.l(site.contact.address)}<br />{t.l(site.contact.city)}</p>
+          </div>
+          <div class="cb__row">
+            <span class="eyebrow">{t('contact.phone')}</span>
+            <a class="cb__big serif" href={phoneHref(t.locale)}>{site.contact.phoneDisplay}</a>
+          </div>
+          <div class="cb__row">
+            <span class="eyebrow">{t('contact.email')}</span>
+            {email ? <a class="link" href={email}>{site.contact.email}</a> : <p>{site.contact.email}</p>}
+          </div>
+          <div class="cb__row">
+            <span class="eyebrow">{t('contact.hours')}</span>
+            <p>{t.l(site.contact.hours)}</p>
+          </div>
+        </address>
+
+        <a class="cb__map" href={mapUrl} target={mapUrl ? '_blank' : undefined} rel={mapUrl ? 'noopener' : undefined}>
+          <Media alt={t('contact.map')} ratio="16 / 9" tone="graphite" label={t('contact.mapPlaceholder')} sizes="(min-width: 900px) 40vw, 100vw" />
+        </a>
+      </div>
+
+      <form
+        class="cb__form"
+        data-booking-form
+        data-endpoint={site.booking.formEndpoint}
+        data-msg-success={t('form.success')}
+        data-msg-error={t('form.error')}
+        data-msg-dev={t('form.notConnected')}
+        data-msg-sending={t('form.sending')}
+        novalidate
+      >
+        <div class="field">
+          <label for="bf-name">{t('form.name')}</label>
+          <input id="bf-name" name="name" type="text" autocomplete="name" required />
+        </div>
+        <div class="field">
+          <label for="bf-phone">{t('form.phone')}</label>
+          <input id="bf-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required pattern="[\d\s\+\-\(\)]{7,}" />
+        </div>
+        <div class="field">
+          <label for="bf-service">{t('form.service')}</label>
+          <select id="bf-service" name="service">
+            <option value="">{t('form.serviceAny')}</option>
+            {services.map((s) => <option value={s.slug}>{t.l(s.title)}</option>)}
+          </select>
+        </div>
+        <div class="field">
+          <label for="bf-message">{t('form.message')} <span class="field__hint">· {t('form.messageHint')}</span></label>
+          <textarea id="bf-message" name="message" rows="3"></textarea>
+        </div>
+        <input type="hidden" name="locale" value={t.locale} />
+        <label class="check">
+          <input type="checkbox" name="consent" required />
+          <span>{t('form.consent')}</span>
+        </label>
+        <Button type="submit" block arrow>{t('form.submit')}</Button>
+        <p class="cb__status" role="status" aria-live="polite" data-form-status></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('[data-booking-form]').forEach((form) => {
+    const status = form.querySelector<HTMLElement>('[data-form-status]');
+    const submit = form.querySelector<HTMLButtonElement>('[type="submit"]');
+    const d = form.dataset;
+
+    const say = (msg = '', tone: 'ok' | 'error' | '' = '') => {
+      if (!status) return;
+      status.textContent = msg;
+      status.dataset.tone = tone;
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      form.classList.add('was-validated');
+      if (!form.checkValidity()) {
+        form.querySelector<HTMLElement>(':invalid')?.focus();
+        return;
+      }
+      if (!d.endpoint) {
+        say(d.msgDev, 'error');
+        return;
+      }
+      submit?.setAttribute('disabled', '');
+      say(d.msgSending);
+      try {
+        const res = await fetch(d.endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(Object.fromEntries(new FormData(form))),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        form.reset();
+        form.classList.remove('was-validated');
+        say(d.msgSuccess, 'ok');
+      } catch {
+        say(d.msgError, 'error');
+      } finally {
+        submit?.removeAttribute('disabled');
+      }
+    });
+  });
+</script>
+
+<style>
+  .cb {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  .cb__info {
+    display: grid;
+    gap: var(--space-lg);
+    align-content: start;
+  }
+
+  .cb__details {
+    font-style: normal;
+    display: grid;
+    border-top: 1px solid var(--line);
+  }
+
+  .cb__row {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+  }
+
+  .cb__big {
+    font-size: 1.75rem;
+    line-height: 1.15;
+    color: var(--text-strong);
+  }
+
+  .cb__map {
+    display: block;
+  }
+
+  /* ---- Form ---- */
+  .cb__form {
+    display: grid;
+    gap: 1.25rem;
+    align-content: start;
+    padding: clamp(1.5rem, 1rem + 2vw, 3rem);
+    background: var(--surface-base);
+    border: 1px solid var(--line);
+  }
+
+  .field {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .field label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .field__hint {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--text-subtle);
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    min-height: 52px;
+    padding: 0.85rem 1rem;
+    font-size: 1rem; /* ≥16px prevents iOS zoom */
+    color: var(--text-strong);
+    background: var(--surface-anthracite);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--dur-fast) var(--ease-out);
+    appearance: none;
+  }
+
+  .field select {
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position:
+      calc(100% - 20px) 50%,
+      calc(100% - 15px) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 2.5rem;
+  }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 96px;
+  }
+
+  .field input:hover,
+  .field select:hover,
+  .field textarea:hover {
+    border-color: var(--line-strong);
+  }
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    outline: none;
+    border-color: var(--color-champagne);
+  }
+
+  .was-validated .field :invalid {
+    border-color: var(--color-champagne);
+    border-style: dashed;
+  }
+
+  .check {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+    cursor: pointer;
+    min-height: var(--tap);
+    padding-top: 0.25rem;
+  }
+
+  .check input {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin: 0.1rem 0 0;
+    accent-color: var(--color-champagne);
+  }
+
+  .was-validated .check input:invalid + span {
+    color: var(--color-champagne);
+  }
+
+  .cb__status {
+    min-height: 1.5em;
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+  }
+  .cb__status[data-tone='ok'] {
+    color: var(--text-strong);
+  }
+  .cb__status[data-tone='error'] {
+    color: var(--color-champagne);
+  }
+
+  @media (min-width: 900px) {
+    .cb {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      gap: clamp(3rem, 6vw, 7rem);
+    }
+  }
+</style>

@@ -1,0 +1,118 @@
+---
+/**
+ * About — large editorial block: portrait-format photo left, story + principles right.
+ * All copy is PLACEHOLDER until the clinic provides its story.
+ */
+import SectionHeading from './SectionHeading.astro';
+import Media from './Media.astro';
+import Button from './Button.astro';
+import type { L10n } from '@/i18n/config';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  index?: string;
+}
+
+const { t, index } = Astro.props;
+
+const principles: { title: L10n; text: L10n }[] = [
+  { title: { uk: 'Історія', en: 'Our story' }, text: { uk: '[PLACEHOLDER: історія клініки.]', en: '[PLACEHOLDER: clinic history.]' } },
+  { title: { uk: 'Філософія', en: 'Philosophy' }, text: { uk: '[PLACEHOLDER: філософія лікування.]', en: '[PLACEHOLDER: treatment philosophy.]' } },
+  { title: { uk: 'Принципи роботи', en: 'How we work' }, text: { uk: '[PLACEHOLDER: принципи роботи з пацієнтами.]', en: '[PLACEHOLDER: working principles.]' } },
+  { title: { uk: 'Персональний підхід', en: 'Personal approach' }, text: { uk: '[PLACEHOLDER: як будується індивідуальний план.]', en: '[PLACEHOLDER: how a personal plan is built.]' } },
+];
+---
+
+<section id="about" class="section surface-warm about" aria-labelledby="about-title">
+  <div class="container">
+    <SectionHeading
+      index={index}
+      eyebrow={t('about.eyebrow')}
+      line1={t('about.title.line1')}
+      line2={t('about.title.line2')}
+      id="about-title"
+      align="start"
+    />
+
+    <div class="about__grid">
+      <figure class="about__figure" data-reveal>
+        <Media
+          alt={t.locale === 'uk' ? 'Інтер’єр клініки' : 'Clinic interior'}
+          ratio="4 / 5"
+          tone="chocolate"
+          label={t.locale === 'uk' ? 'Інтер’єр / лікар за роботою · 4:5' : 'Interior / doctor at work · 4:5'}
+          sizes="(min-width: 900px) 45vw, 100vw"
+        />
+      </figure>
+
+      <div class="about__body">
+        <p class="about__lead serif" data-reveal>{t('about.lead')}</p>
+
+        <ol class="about__list" role="list">
+          {
+            principles.map((p, i) => (
+              <li class="about__item" data-reveal style={`--reveal-delay: ${i * 70}ms`}>
+                <span class="index">{String(i + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3 class="about__item-title">{t.l(p.title)}</h3>
+                  <p class="muted">{t.l(p.text)}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+
+        <Button href={t.path('/#doctors')} variant="text" arrow>{t('doctors.title')}</Button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about__grid {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  .about__lead {
+    font-size: clamp(1.45rem, 1.2rem + 1vw, 2rem);
+    line-height: 1.35;
+    color: var(--text);
+    margin-bottom: var(--space-xl);
+  }
+
+  .about__list {
+    border-top: 1px solid var(--line);
+    margin-bottom: var(--space-lg);
+  }
+
+  .about__item {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1.4rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .about__item .index {
+    padding-top: 0.35rem;
+  }
+
+  .about__item-title {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--text-strong);
+    margin-bottom: 0.25rem;
+  }
+
+  @media (min-width: 900px) {
+    .about__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: clamp(3rem, 7vw, 8rem);
+      align-items: center;
+    }
+  }
+</style>

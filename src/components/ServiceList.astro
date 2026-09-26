@@ -1,0 +1,103 @@
+---
+/**
+ * Editorial numbered list of services with a sticky photo preview (desktop).
+ * Hovering / focusing a row reveals its photo — pure CSS via :has(), zero JS.
+ * Data: src/data/services.ts
+ */
+import ServiceItem from './ServiceItem.astro';
+import Media from './Media.astro';
+import type { Service } from '@/data/types';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  services: Service[];
+}
+
+const { t, services } = Astro.props;
+
+// Generated once per list length: row N active → preview N visible.
+const previewCss = services
+  .map(
+    (_, i) =>
+      `.sl:has(.si:nth-child(${i + 1}) :is(a:hover,a:focus-visible)) .sl__frame:nth-child(${i + 2}){opacity:1;clip-path:inset(0)}`,
+  )
+  .join('');
+---
+
+<div class="sl">
+  <ol class="sl__list" role="list">
+    {services.map((service, i) => <ServiceItem t={t} service={service} index={i} />)}
+  </ol>
+
+  <div class="sl__preview" aria-hidden="true">
+    <div class="sl__frame sl__frame--default">
+      <Media
+        alt=""
+        ratio="4 / 5"
+        tone="chocolate"
+        label={t.locale === 'uk' ? 'Інтер’єр клініки · 4:5' : 'Clinic interior · 4:5'}
+        sizes="(min-width: 900px) 34vw, 1px"
+      />
+    </div>
+    {
+      services.map((service, i) => (
+        <div class="sl__frame">
+          <Media
+            src={service.image.src}
+            alt=""
+            ratio="4 / 5"
+            tone={i % 2 ? 'warm' : 'anthracite'}
+            label={`${String(i + 1).padStart(2, '0')} · ${t.l(service.title)}`}
+            sizes="(min-width: 900px) 34vw, 1px"
+          />
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<style is:inline set:html={`@media (hover:hover) and (min-width:900px){${previewCss}}`}></style>
+
+<style>
+  .sl {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  .sl__list {
+    border-top: 1px solid var(--line);
+  }
+
+  .sl__preview {
+    display: none;
+  }
+
+  @media (min-width: 900px) {
+    .sl {
+      grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+      gap: clamp(3rem, 6vw, 7rem);
+      align-items: start;
+    }
+
+    .sl__preview {
+      display: grid;
+      position: sticky;
+      top: calc(var(--header-h) + 2rem);
+    }
+
+    .sl__frame {
+      grid-area: 1 / 1;
+      opacity: 0;
+      clip-path: inset(8% 0 0 0);
+      transition:
+        opacity var(--dur) var(--ease-out),
+        clip-path var(--dur-slow) var(--ease-out);
+    }
+
+    .sl__frame--default {
+      opacity: 1;
+      clip-path: inset(0);
+    }
+  }
+</style>

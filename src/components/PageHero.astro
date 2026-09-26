@@ -1,0 +1,92 @@
+---
+/**
+ * Inner-page hero: breadcrumb, H1, lead, optional media. Used by detail pages.
+ */
+import Media from './Media.astro';
+import type { ImageMetadata } from 'astro';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  eyebrow: string;
+  title: string;
+  lead?: string;
+  crumbs: { label: string; href?: string }[];
+  image?: { src?: ImageMetadata; alt: string; label: string };
+}
+
+const { eyebrow, title, lead, crumbs, image } = Astro.props;
+---
+
+<section class="ph surface-base">
+  <div class="container ph__inner">
+    <nav aria-label="Breadcrumb" class="ph__crumbs">
+      <ol role="list">
+        {
+          crumbs.map((c) => (
+            <li>{c.href ? <a href={c.href}>{c.label}</a> : <span aria-current="page">{c.label}</span>}</li>
+          ))
+        }
+      </ol>
+    </nav>
+    <div class="ph__grid">
+      <div class="ph__text">
+        <p class="eyebrow hero-in">{eyebrow}</p>
+        <h1 class="h1 hero-in" style="--d: 80ms">{title}</h1>
+        {lead && <p class="lead hero-in" style="--d: 160ms">{lead}</p>}
+        <slot />
+      </div>
+      {
+        image && (
+          <div class="ph__media hero-in" style="--d: 120ms">
+            <Media src={image.src} alt={image.alt} ratio="4 / 5" tone="chocolate" label={image.label} priority sizes="(min-width: 900px) 40vw, 100vw" />
+          </div>
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .ph {
+    padding-top: calc(var(--header-h) + clamp(2rem, 1rem + 4vw, 5rem));
+    padding-bottom: var(--section-y);
+  }
+
+  .ph__crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: var(--space-xl);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--text-subtle);
+  }
+  .ph__crumbs li + li::before {
+    content: '/';
+    margin-right: 0.5rem;
+    color: var(--line-strong);
+  }
+  .ph__crumbs a:hover {
+    color: var(--text-strong);
+  }
+
+  .ph__grid {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  .ph__text {
+    display: grid;
+    gap: var(--space-md);
+    align-content: end;
+  }
+
+  @media (min-width: 900px) {
+    .ph__grid {
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: clamp(3rem, 7vw, 8rem);
+      align-items: end;
+    }
+  }
+</style>

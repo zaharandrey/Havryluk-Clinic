@@ -1,0 +1,102 @@
+---
+import Media from './Media.astro';
+import type { Doctor } from '@/data/types';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  doctor: Doctor;
+  index: number;
+}
+
+const { t, doctor, index } = Astro.props;
+const href = t.path(`/doctors/${doctor.slug}`);
+---
+
+<article class="dc" data-reveal style={`--reveal-delay: ${index * 90}ms`}>
+  <a href={href} class="dc__photo" tabindex="-1" aria-hidden="true">
+    <Media
+      src={doctor.image.src}
+      alt=""
+      ratio="4 / 5"
+      tone={(['anthracite', 'warm', 'chocolate'] as const)[index % 3]}
+      label={t.locale === 'uk' ? 'Портрет лікаря · 4:5' : 'Doctor portrait · 4:5'}
+      sizes="(min-width: 900px) 30vw, 80vw"
+    />
+  </a>
+  <div class="dc__body">
+    <p class="eyebrow dc__role">{t.l(doctor.role)}</p>
+    <h3 class="dc__name">
+      <a href={href}>{t.l(doctor.name)}</a>
+    </h3>
+    <p class="dc__spec">{t.l(doctor.specialization)}</p>
+    <span class="dc__more" aria-hidden="true">
+      {t('cta.more')}
+      <svg width="16" height="10" viewBox="0 0 16 10"><path d="M0 5h14.5M10.5 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1" /></svg>
+    </span>
+  </div>
+</article>
+
+<style>
+  .dc {
+    position: relative;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .dc__photo {
+    display: block;
+    overflow: hidden;
+  }
+
+  .dc__photo :global(.media) {
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+
+  .dc:hover .dc__photo :global(.media) {
+    transform: scale(1.025);
+  }
+
+  .dc__body {
+    display: grid;
+    gap: 0.4rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .dc__name {
+    font-size: clamp(1.5rem, 1.3rem + 0.8vw, 1.9rem);
+  }
+
+  /* Whole card is clickable via the name link */
+  .dc__name a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .dc__spec {
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+  }
+
+  .dc__more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-strong);
+  }
+
+  .dc__more svg {
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .dc:hover .dc__more svg {
+    transform: translateX(4px);
+  }
+</style>

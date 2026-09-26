@@ -1,0 +1,141 @@
+---
+import Logo from './Logo.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import { site } from '@/config/site';
+import { footerNav } from '@/data/navigation';
+import { emailHref, phoneHref } from '@/lib/contact';
+import { isFilled } from '@/lib/placeholder';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+}
+
+const { t } = Astro.props;
+const year = new Date().getFullYear();
+const email = emailHref();
+---
+
+<footer class="footer surface-base">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <Logo t={t} size="lg" />
+        <p class="footer__tagline serif"><em>{t('footer.tagline')}</em></p>
+      </div>
+
+      <div class="footer__cols">
+        <div class="footer__col">
+          <h2 class="eyebrow">{t('footer.contacts')}</h2>
+          <address>
+            <p>{t.l(site.contact.address)}</p>
+            <p><a href={phoneHref(t.locale)}>{site.contact.phoneDisplay}</a></p>
+            <p>{email ? <a href={email}>{site.contact.email}</a> : site.contact.email}</p>
+            <p class="muted">{t.l(site.contact.hours)}</p>
+          </address>
+        </div>
+
+        <nav class="footer__col" aria-label={t('footer.nav')}>
+          <h2 class="eyebrow">{t('footer.nav')}</h2>
+          <ul role="list">
+            {footerNav.map((item) => <li><a href={t.path(item.href)}>{t(item.key)}</a></li>)}
+          </ul>
+        </nav>
+
+        <div class="footer__col">
+          <h2 class="eyebrow">{t('footer.social')}</h2>
+          <ul role="list">
+            {
+              site.social.map((s) =>
+                isFilled(s.url) ? (
+                  <li><a href={s.url} target="_blank" rel="noopener">{s.label}</a></li>
+                ) : (
+                  <li><span class="muted" title="[URL]">{s.label}</span></li>
+                ),
+              )
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <p>© {year} {site.name}. {t('footer.rights')}</p>
+      <LanguageSwitcher t={t} />
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding-top: clamp(4rem, 3rem + 5vw, 7rem);
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-small);
+  }
+
+  .footer__top {
+    display: grid;
+    gap: var(--space-xl);
+    padding-bottom: var(--space-xl);
+  }
+
+  .footer__tagline {
+    margin-top: var(--space-md);
+    font-size: 1.35rem;
+    color: var(--text-muted);
+  }
+
+  .footer__cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-lg) var(--space-md);
+  }
+
+  .footer__col .eyebrow {
+    margin-bottom: 1rem;
+  }
+
+  .footer__col ul,
+  .footer__col address {
+    display: grid;
+    gap: 0.4rem;
+    font-style: normal;
+  }
+
+  .footer__col a {
+    display: inline-block;
+    padding-block: 0.2rem;
+    color: var(--text);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .footer__col a:hover {
+    color: var(--color-champagne);
+  }
+
+  .footer__col:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-block: 1.25rem;
+    border-top: 1px solid var(--line);
+    color: var(--text-subtle);
+  }
+
+  @media (min-width: 900px) {
+    .footer__top {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    }
+    .footer__cols {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .footer__col:first-child {
+      grid-column: auto;
+    }
+  }
+</style>

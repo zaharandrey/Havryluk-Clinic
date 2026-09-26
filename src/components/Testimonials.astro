@@ -1,0 +1,154 @@
+---
+/**
+ * Testimonials — one large quote at a time (scroll-snap track; swipe on touch),
+ * with a minimal 01 / 03 pager. Works without JS as a swipeable strip.
+ * Data: src/data/testimonials.ts — real reviews only.
+ */
+import SectionHeading from './SectionHeading.astro';
+import TestimonialItem from './Testimonial.astro';
+import type { Testimonial } from '@/data/types';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  items: Testimonial[];
+  index?: string;
+}
+
+const { t, items, index } = Astro.props;
+const total = String(items.length).padStart(2, '0');
+---
+
+<section id="reviews" class="section surface-chocolate" aria-labelledby="reviews-title">
+  <div class="container">
+    <SectionHeading index={index} eyebrow={t('reviews.eyebrow')} line1={t('reviews.title')} id="reviews-title" />
+
+    <div class="tms" data-tms>
+      <div class="tms__track" data-tms-track tabindex="0" aria-roledescription="carousel" aria-label={t('reviews.title')}>
+        {
+          items.map((item, i) => (
+            <div class="tms__slide" role="group" aria-roledescription="slide" aria-label={`${i + 1} / ${items.length}`}>
+              <TestimonialItem t={t} item={item} />
+            </div>
+          ))
+        }
+      </div>
+
+      {
+        items.length > 1 && (
+          <div class="tms__controls">
+            <p class="tms__count index" aria-hidden="true">
+              <span data-tms-current>01</span> / {total}
+            </p>
+            <span class="tms__progress" aria-hidden="true"><span data-tms-bar style={`width: ${100 / items.length}%`} /></span>
+            <div class="tms__buttons">
+              <button type="button" class="tms__btn" data-tms-prev aria-label={t('a11y.prev')}>
+                <svg width="22" height="14" viewBox="0 0 22 14" aria-hidden="true"><path d="M22 7H1.5M7.5 1l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1" /></svg>
+              </button>
+              <button type="button" class="tms__btn" data-tms-next aria-label={t('a11y.next')}>
+                <svg width="22" height="14" viewBox="0 0 22 14" aria-hidden="true"><path d="M0 7h20.5M14.5 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1" /></svg>
+              </button>
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-tms]').forEach((root) => {
+    const track = root.querySelector<HTMLElement>('[data-tms-track]');
+    const current = root.querySelector<HTMLElement>('[data-tms-current]');
+    const bar = root.querySelector<HTMLElement>('[data-tms-bar]');
+    if (!track) return;
+    const count = track.children.length;
+
+    const index = () => Math.round(track.scrollLeft / track.clientWidth);
+    const go = (i: number) => {
+      const next = (i + count) % count;
+      track.scrollTo({ left: next * track.clientWidth });
+    };
+
+    root.querySelector('[data-tms-prev]')?.addEventListener('click', () => go(index() - 1));
+    root.querySelector('[data-tms-next]')?.addEventListener('click', () => go(index() + 1));
+
+    let raf = 0;
+    track.addEventListener(
+      'scroll',
+      () => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          const i = index();
+          if (current) current.textContent = String(i + 1).padStart(2, '0');
+          if (bar) bar.style.transform = `translateX(${i * 100}%)`;
+        });
+      },
+      { passive: true },
+    );
+  });
+</script>
+
+<style>
+  .tms__track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .tms__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tms__slide {
+    scroll-snap-align: start;
+    padding-right: 1px;
+  }
+
+  .tms__controls {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: var(--space-xl);
+  }
+
+  .tms__progress {
+    position: relative;
+    height: 1px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .tms__progress span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--color-champagne);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .tms__buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .tms__btn {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    color: var(--text-strong);
+    transition:
+      border-color var(--dur) var(--ease-out),
+      background-color var(--dur) var(--ease-out);
+  }
+  .tms__btn:hover {
+    border-color: var(--text);
+    background: var(--tint-hover);
+  }
+</style>

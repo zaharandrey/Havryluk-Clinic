@@ -1,0 +1,28 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Button from '@/components/Button.astro';
+import { useTranslations } from '@/i18n/utils';
+
+const t = useTranslations('uk');
+const en = useTranslations('en');
+---
+
+<BaseLayout t={t} title={`404 — ${t('notFound.title')} · Havryluk Clinic`} description={t('notFound.text')} noindex>
+  <section class="nf container">
+    <p class="index">404</p>
+    <h1 class="h1">{t('notFound.title')}</h1>
+    <p class="lead">{t('notFound.text')}</p>
+    <p class="lead" lang="en">{en('notFound.title')}. {en('notFound.text')}</p>
+    <div><Button href="/" arrow>{t('cta.backHome')}</Button></div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf {
+    display: grid;
+    gap: var(--space-md);
+    align-content: center;
+    min-height: 80vh;
+    padding-top: var(--header-h);
+  }
+</style>

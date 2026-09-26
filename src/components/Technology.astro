@@ -1,0 +1,142 @@
+---
+/**
+ * Technology — large equipment photography + numbered explanatory blocks.
+ * No specific equipment is claimed until the clinic confirms it (see data/technology.ts).
+ */
+import SectionHeading from './SectionHeading.astro';
+import Media from './Media.astro';
+import { technology, technologyImages } from '@/data/technology';
+import type { Translator } from '@/i18n/utils';
+
+interface Props {
+  t: Translator;
+  index?: string;
+}
+
+const { t, index } = Astro.props;
+const [main, detail] = technologyImages;
+---
+
+<section id="technology" class="section surface-base tech" aria-labelledby="tech-title">
+  <div class="container">
+    <SectionHeading
+      index={index}
+      eyebrow={t('tech.eyebrow')}
+      line1={t('tech.title.line1')}
+      line2={t('tech.title.line2')}
+      intro={t('tech.intro')}
+      id="tech-title"
+    />
+
+    <div class="tech__media">
+      <div class="tech__main" data-reveal>
+        <Media
+          src={main.src}
+          alt={t.l(main.alt)}
+          ratio="3 / 2"
+          tone="anthracite"
+          label={t.locale === 'uk' ? 'Обладнання · 3:2' : 'Equipment · 3:2'}
+          sizes="(min-width: 900px) 62vw, 100vw"
+        />
+      </div>
+      <div class="tech__detail" data-reveal style="--reveal-delay: 120ms">
+        <Media
+          src={detail.src}
+          alt={t.l(detail.alt)}
+          ratio="4 / 5"
+          tone="chocolate"
+          label={t.locale === 'uk' ? 'Деталь · 4:5' : 'Detail · 4:5'}
+          sizes="(min-width: 900px) 30vw, 60vw"
+        />
+      </div>
+    </div>
+
+    <ol class="tech__list" role="list">
+      {
+        technology.map((item, i) => (
+          <li class="tech__item" data-reveal style={`--reveal-delay: ${i * 80}ms`}>
+            <span class="tech__num serif">{String(i + 1).padStart(2, '0')}</span>
+            <h3 class="tech__title">{t.l(item.title)}</h3>
+            <p class="tech__text">{t.l(item.text)}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .tech__media {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: var(--space-xl);
+  }
+
+  .tech__detail {
+    width: 62%;
+    margin-left: auto;
+    margin-top: -18%;
+    position: relative;
+    outline: 10px solid var(--surface-base);
+  }
+
+  .tech__list {
+    display: grid;
+    border-top: 1px solid var(--line);
+  }
+
+  .tech__item {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1.75rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .tech__num {
+    font-size: 2.25rem;
+    line-height: 1;
+    color: var(--text-accent);
+    font-weight: 300;
+  }
+
+  .tech__title {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-strong);
+    margin-top: 0.75rem;
+  }
+
+  .tech__text {
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+  }
+
+  @media (min-width: 900px) {
+    .tech__media {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      align-items: end;
+      gap: clamp(1.5rem, 3vw, 3rem);
+    }
+    .tech__detail {
+      width: auto;
+      margin: 0 0 -4rem;
+      outline: 0;
+    }
+
+    .tech__list {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-top: 0;
+      margin-top: var(--space-2xl);
+    }
+    .tech__item {
+      padding: 2rem 1.75rem 0 1.75rem;
+      border-bottom: 0;
+      border-left: 1px solid var(--line);
+    }
+    .tech__item:first-child {
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+</style>

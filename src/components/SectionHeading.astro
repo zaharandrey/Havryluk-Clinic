@@ -1,0 +1,71 @@
+---
+/**
+ * Editorial section heading: index number + eyebrow on a hairline, then the title.
+ * Title accepts `line1` + optional italic `line2` for the serif/italic rhythm.
+ */
+interface Props {
+  index?: string;
+  eyebrow: string;
+  line1: string;
+  line2?: string;
+  intro?: string;
+  id?: string;
+  level?: 'h1' | 'h2';
+  align?: 'start' | 'split';
+}
+
+const { index, eyebrow, line1, line2, intro, id, level = 'h2', align = 'split' } = Astro.props;
+const Heading = level;
+---
+
+<header class:list={['sh', `sh--${align}`]}>
+  <div class="sh__meta">
+    {index && <span class="index">{index}</span>}
+    <span class="sh__line" data-reveal-line aria-hidden="true"></span>
+    <span class="eyebrow">{eyebrow}</span>
+  </div>
+  <div class="sh__body">
+    <Heading class:list={['sh__title', level === 'h1' ? 'h1' : 'h2']} id={id} data-reveal>
+      {line1}
+      {line2 && (<><br /><em>{line2}</em></>)}
+    </Heading>
+    {intro && <p class="lead sh__intro" data-reveal style="--reveal-delay: 120ms">{intro}</p>}
+  </div>
+</header>
+
+<style>
+  .sh {
+    display: grid;
+    gap: var(--space-lg);
+    margin-bottom: clamp(3rem, 2rem + 4vw, 6rem);
+  }
+
+  .sh__meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .sh__line {
+    flex: 0 0 clamp(3rem, 8vw, 7rem);
+    height: 1px;
+    background: var(--line-accent);
+  }
+
+  .sh__body {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  @media (min-width: 900px) {
+    .sh--split .sh__body {
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+      align-items: end;
+      gap: var(--space-xl);
+    }
+    .sh--split .sh__intro {
+      justify-self: end;
+      max-width: 26rem;
+    }
+  }
+</style>

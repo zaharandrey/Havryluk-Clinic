@@ -1,0 +1,94 @@
+---
+/**
+ * Doctor detail template — /doctors/[slug] and /en/doctors/[slug].
+ * One page per entry in src/data/doctors.ts. Kept out of the index while placeholder.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Button from '@/components/Button.astro';
+import CTA from '@/components/CTA.astro';
+import { doctors } from '@/data/doctors';
+import type { Doctor } from '@/data/types';
+import { locales } from '@/i18n/config';
+import { localeFromParam, localeParam, useTranslations } from '@/i18n/utils';
+import { bookingPath } from '@/lib/contact';
+import { isPlaceholder } from '@/lib/placeholder';
+
+export function getStaticPaths() {
+  return locales.flatMap((locale) =>
+    doctors.map((doctor) => ({
+      params: { locale: localeParam(locale), slug: doctor.slug },
+      props: { doctor },
+    })),
+  );
+}
+
+interface Props {
+  doctor: Doctor;
+}
+
+const { doctor } = Astro.props;
+const t = useTranslations(localeFromParam(Astro.params.locale));
+const name = t.l(doctor.name);
+const isDraft = isPlaceholder(name);
+
+const personSchema = isDraft
+  ? []
+  : [
+      {
+        '@type': 'Person',
+        name,
+        jobTitle: t.l(doctor.role),
+        worksFor: { '@id': `${new URL('/', Astro.site).href}#clinic` },
+      },
+    ];
+---
+
+<BaseLayout
+  t={t}
+  title={`${name} — ${t.l(doctor.role)} · Havryluk Clinic`}
+  description={`${name}, ${t.l(doctor.specialization)} — Havryluk Clinic.`}
+  schema={personSchema}
+  noindex={isDraft}
+>
+  <PageHero
+    t={t}
+    eyebrow={t.l(doctor.role)}
+    title={name}
+    lead={t.l(doctor.specialization)}
+    crumbs={[
+      { label: t.locale === 'uk' ? 'Головна' : 'Home', href: t.path('/') },
+      { label: t('nav.doctors'), href: t.path('/#doctors') },
+      { label: name },
+    ]}
+    image={{ src: doctor.image.src, alt: t.l(doctor.image.alt), label: t.locale === 'uk' ? 'Портрет лікаря · 4:5' : 'Doctor portrait · 4:5' }}
+  >
+    <div><Button href={bookingPath(t.locale)} arrow>{t('cta.bookConsultation')}</Button></div>
+  </PageHero>
+
+  <section class="section surface-warm">
+    <div class="container dd">
+      <h2 class="h3">{t('doctor.about')}</h2>
+      <p class="lead">{t('doctor.aboutText')}</p>
+      <h2 class="h3">{t('doctor.education')}</h2>
+      <p class="muted">{t('doctor.educationText')}</p>
+    </div>
+  </section>
+
+  <CTA t={t} />
+</BaseLayout>
+
+<style>
+  .dd {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  @media (min-width: 900px) {
+    .dd {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      column-gap: clamp(3rem, 7vw, 8rem);
+      row-gap: var(--space-xl);
+    }
+  }
+</style>

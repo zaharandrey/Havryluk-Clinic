@@ -1,0 +1,119 @@
+---
+/**
+ * Button / link-button.
+ * variant: 'primary' (ivory fill) · 'outline' (hairline) · 'text' (underlined with arrow)
+ */
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends Omit<HTMLAttributes<'a'>, 'type'> {
+  href?: string;
+  variant?: 'primary' | 'outline' | 'text';
+  size?: 'md' | 'sm';
+  arrow?: boolean;
+  type?: 'button' | 'submit';
+  block?: boolean;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  arrow = false,
+  type = 'button',
+  block = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const classes = ['btn', `btn--${variant}`, `btn--${size}`, block && 'btn--block', className];
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  class:list={classes}
+  href={href}
+  type={href ? undefined : type}
+  {...rest}
+>
+  <span class="btn__label"><slot /></span>
+  {
+    arrow && (
+      <svg class="btn__arrow" width="16" height="10" viewBox="0 0 16 10" aria-hidden="true">
+        <path d="M0 5h14.5M10.5 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1" />
+      </svg>
+    )
+  }
+</Tag>
+
+<style>
+  .btn {
+    --_h: 52px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+    min-height: var(--_h);
+    padding: 0 1.6rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition:
+      background-color var(--dur) var(--ease-out),
+      color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+
+  .btn--sm {
+    --_h: 44px;
+    padding: 0 1.15rem;
+    font-size: 0.75rem;
+  }
+
+  .btn--block {
+    width: 100%;
+  }
+
+  .btn--primary {
+    background: var(--color-ivory);
+    color: var(--color-graphite);
+  }
+  .btn--primary:hover {
+    background: var(--color-white);
+  }
+
+  .btn--outline {
+    border: 1px solid var(--line-strong);
+    color: var(--text-strong);
+  }
+  .btn--outline:hover {
+    border-color: var(--text);
+    background: var(--tint-hover);
+  }
+
+  .btn--text {
+    min-height: var(--tap);
+    padding: 0;
+    color: var(--text-strong);
+  }
+  .btn--text .btn__label {
+    background: linear-gradient(var(--line-strong), var(--line-strong)) 0 100% / 100% 1px no-repeat;
+    padding-bottom: 4px;
+    transition: background-image var(--dur) var(--ease-out);
+  }
+  .btn--text:hover .btn__label {
+    background-image: linear-gradient(var(--color-champagne), var(--color-champagne));
+  }
+
+  .btn__arrow {
+    flex: none;
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .btn:hover .btn__arrow {
+    transform: translateX(4px);
+  }
+</style>
