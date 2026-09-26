@@ -6,16 +6,16 @@
  * Anything in [square brackets] is placeholder copy awaiting real content.
  */
 const uk = {
-  'meta.home.title': 'Havryluk Clinic — сучасна стоматологія в [Місто]',
+  'meta.home.title': 'Havryliuk Clinic — сучасна стоматологія в [Місто]',
   'meta.home.description':
-    'Havryluk Clinic — сучасна стоматологія з точністю, комфортом і персональним підходом. Запис на консультацію онлайн або за телефоном.',
+    'Havryliuk Clinic — сучасна стоматологія з точністю, комфортом і персональним підходом. Запис на консультацію онлайн або за телефоном.',
 
   'a11y.skip': 'Перейти до основного вмісту',
   'a11y.menuOpen': 'Відкрити меню',
   'a11y.menuClose': 'Закрити меню',
   'a11y.primaryNav': 'Основна навігація',
   'a11y.language': 'Мова сайту',
-  'a11y.home': 'Havryluk Clinic — на головну',
+  'a11y.home': 'Havryliuk Clinic — на головну',
   'a11y.prev': 'Попередній',
   'a11y.next': 'Наступний',
   'a11y.compare': 'Порівняння до та після: перетягніть розділювач',
@@ -36,7 +36,7 @@ const uk = {
   'cta.allServices': 'Усі послуги',
   'cta.backHome': 'На головну',
 
-  'hero.eyebrow': 'Havryluk Clinic · [Місто]',
+  'hero.eyebrow': 'Havryliuk Clinic · [Місто]',
   'hero.title.line1': 'Сучасна стоматологія.',
   'hero.title.line2': 'Уважно й персонально.',
   'hero.lead':
@@ -57,7 +57,7 @@ const uk = {
   'about.title.line1': 'Стоматологія',
   'about.title.line2': 'з іншим підходом.',
   'about.lead':
-    '[PLACEHOLDER: історія Havryluk Clinic — коли і чому клініку засновано, що для неї важливо. 2–3 речення.]',
+    '[PLACEHOLDER: історія Havryliuk Clinic — коли і чому клініку засновано, що для неї важливо. 2–3 речення.]',
 
   'doctors.eyebrow': 'Команда',
   'doctors.title': 'Наші лікарі',
@@ -139,16 +139,16 @@ const uk = {
 export type UIKey = keyof typeof uk;
 
 const en: Record<UIKey, string> = {
-  'meta.home.title': 'Havryluk Clinic — modern dentistry in [City]',
+  'meta.home.title': 'Havryliuk Clinic — modern dentistry in [City]',
   'meta.home.description':
-    'Havryluk Clinic — modern dentistry with precision, comfort and a personal approach. Book a consultation online or by phone.',
+    'Havryliuk Clinic — modern dentistry with precision, comfort and a personal approach. Book a consultation online or by phone.',
 
   'a11y.skip': 'Skip to main content',
   'a11y.menuOpen': 'Open menu',
   'a11y.menuClose': 'Close menu',
   'a11y.primaryNav': 'Primary navigation',
   'a11y.language': 'Site language',
-  'a11y.home': 'Havryluk Clinic — home',
+  'a11y.home': 'Havryliuk Clinic — home',
   'a11y.prev': 'Previous',
   'a11y.next': 'Next',
   'a11y.compare': 'Before and after comparison: drag the divider',
@@ -169,7 +169,7 @@ const en: Record<UIKey, string> = {
   'cta.allServices': 'All services',
   'cta.backHome': 'Back to home',
 
-  'hero.eyebrow': 'Havryluk Clinic · [City]',
+  'hero.eyebrow': 'Havryliuk Clinic · [City]',
   'hero.title.line1': 'Modern dentistry.',
   'hero.title.line2': 'Thoughtfully personal.',
   'hero.lead':
@@ -190,7 +190,7 @@ const en: Record<UIKey, string> = {
   'about.title.line1': 'Dentistry,',
   'about.title.line2': 'with a different approach.',
   'about.lead':
-    '[PLACEHOLDER: the story of Havryluk Clinic — when and why it was founded, what matters most. 2–3 sentences.]',
+    '[PLACEHOLDER: the story of Havryliuk Clinic — when and why it was founded, what matters most. 2–3 sentences.]',
 
   'doctors.eyebrow': 'Team',
   'doctors.title': 'Our doctors',

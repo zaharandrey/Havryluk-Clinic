@@ -1,4 +1,4 @@
-# Havryluk Clinic — дизайн-система
+# Havryliuk Clinic — дизайн-система
 
 > Modern dentistry. Thoughtfully personal.
 > Графіт + теплий шоколад + слонова кістка. Дорожнеча через простір, типографіку та стриманість.

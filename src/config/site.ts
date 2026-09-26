@@ -5,8 +5,8 @@
  * emitted into structured data (schema.org) or used as real links.
  */
 export const site = {
-  name: 'Havryluk Clinic',
-  shortName: 'Havryluk',
+  name: 'Havryliuk Clinic',
+  shortName: 'Havryliuk',
 
   contact: {
     phoneDisplay: '[Телефон]',
